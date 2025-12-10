@@ -27,18 +27,84 @@ struct TeamReport {
     int winPercent;
 };
 
+class TeamTracker {
+private:
+    TeamReport reports[10];
+    int count;
+
+public:
+    // Constructor initializes data safely
+    TeamTracker() {
+        count = 0;
+    }
+
+    // Add a report to the tracker
+    bool addReport(const TeamReport& r) {
+        if (count >= 10)
+            return false;
+        reports[count++] = r;
+        return true;
+    }
+
+    // Display all stored reports
+    void displayReports() const {
+        if (count == 0) {
+            cout << "\nNo reports saved yet.\n";
+            return;
+        }
+
+        cout << "\n--- Saved Team Reports ---\n";
+        for (int i = 0; i < count; i++) {
+            cout << "Team: " << reports[i].team << endl;
+            cout << "Conference: " << reports[i].conference << endl;
+            cout << "Last Won: " << reports[i].lastWon << endl;
+            cout << "Wins: " << reports[i].wins << endl;
+            cout << "Losses: " << reports[i].losses << endl;
+            cout << "Win %: " << reports[i].winPercent << "%\n";
+            cout << "-----------------------------\n";
+        }
+    }
+
+    // Save all reports to a text file
+    void saveToFile(const string& file) const {
+        ofstream out(file);
+
+        if (!out.is_open()) {
+            cout << "Error opening file for writing.\n";
+            return;
+        }
+
+        for (int i = 0; i < count; i++) {
+            out << "Team: " << reports[i].team << "\n";
+            out << "Conference: " << reports[i].conference << "\n";
+            out << "Year Won: " << reports[i].lastWon << "\n";
+            out << "Wins: " << reports[i].wins << "\n";
+            out << "Losses: " << reports[i].losses << "\n";
+            out << "Win Percent: " << reports[i].winPercent << "%\n";
+            out << "-----------------------------\n";
+        }
+
+        out.close();
+        cout << "Reports saved successfully.\n";
+    }
+};
+
 int main()
 {
     setConsoleColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+
+    TeamTracker tracker;   // <-- using the new class
+
     int MenuChoice = 0;
     bool LeaveMenu = false;
 
     do
     {
         cout << "\n--- Main Menu ---\n";
-        cout << "1. BaseBall team Questionnaire\n";
-        cout << "2. Weekly submission report\n";
-        cout << "3. Exit Main Menu\n";
+        cout << "1. Baseball Team Questionnaire\n";
+        cout << "2. Weekly Submission Report (Last Team Viewed)\n";
+        cout << "3. Show Saved Reports (Overall report)\n";
+        cout << "4. Exit Program\n";
         cout << "Enter your choice: ";
 
         cin >> MenuChoice;
@@ -163,6 +229,9 @@ int main()
             report.losses = losses;
             report.winPercent = WLpercent;
 
+            tracker.addReport(report);        // save in class
+            tracker.saveToFile(OUTPUT_FILE);  // save to file
+
             outputFile << "Team: " << report.team << endl;
             outputFile << "Conference: " << report.conference << endl;
             outputFile << "Year Won: " << report.lastWon << endl;
@@ -196,9 +265,13 @@ int main()
             break;
         }
         case 3:
+            tracker.displayReports();
+            break;
+
+        case 4:
             cout << "Exiting the program. Goodbye!\n";
             LeaveMenu = true;
-            break;
+			break;
         default:
             cout << "Invalid choice. Please try again.\n";
             break;
